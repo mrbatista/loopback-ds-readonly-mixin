@@ -123,9 +123,8 @@ In this example we mark the `status` and `role` fields as read only.
   }
 ```
 
-It is possible to specify a method where fields are accepted:
-mark each field with property `skip` in the options
-`skip` property should support String or Array types
+It is possible to specify a method where fields are accepted: mark each field with property `skip` in the options,
+`skip` property should support String or Array types.
 
 In this example, the `status` and `role` fields are read only for all methods except `create`.
 
