@@ -18,5 +18,17 @@
   "Product": {
     "dataSource": "db",
     "public": true
+  },
+  "Friend": {
+    "dataSource": "db",
+    "public": true
+  },
+  "Profile": {
+    "dataSource": "db",
+    "public": true
+  },
+  "Balance": {
+    "dataSource": "db",
+    "public": true
   }
 }

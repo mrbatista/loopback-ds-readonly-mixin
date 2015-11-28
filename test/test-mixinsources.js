@@ -1,6 +1,6 @@
-var loopback = require('loopback');
 var lt = require('loopback-testing');
 var chai = require('chai');
+chai.use(require('chai-datetime'));
 var expect = chai.expect;
 
 // Create a new loopback app.
@@ -20,7 +20,7 @@ describe('loopback datasource readonly property (mixin sources.js)', function() 
       done();
     });
 
-    it('should change readonly properties on update.', function(done) {
+    it('should change readonly properties on update', function(done) {
       var self = this;
       self.product.name = 'some other book';
       self.product.status = 'disabled';
@@ -36,7 +36,7 @@ describe('loopback datasource readonly property (mixin sources.js)', function() 
 
   describe('when called remotely', function() {
     lt.beforeEach.givenModel('Product', {name: 'some book', type: 'book', status: 'pending'}, 'product');
-    it('should not save readonly properties on create.', function(done) {
+    it('should not save readonly properties on create', function(done) {
       var product = this.product;
       this.post('/api/products')
         .send({
@@ -111,7 +111,7 @@ describe('loopback datasource readonly property (mixin sources.js)', function() 
         .send(data)
         .set('Accept', 'application/json')
         .expect(200)
-        .end(function(err, res) {
+        .end(function(err) {
           expect(err).to.not.exist;
           app.models.Product.findById(self.book1.id, function(err, b1) {
             expect(err).to.not.exist;
@@ -123,6 +123,152 @@ describe('loopback datasource readonly property (mixin sources.js)', function() 
             });
           });
         });
+    });
+
+    describe('relations hasMany', function() {
+      lt.beforeEach.givenModel('Person', {name: 'Tom', status: 'disabled', role: 'user'}, 'Person');
+      it('should not change read only properties on create (full read only model)', function(done) {
+        this.post('/api/people/' + this.Person.id + '/audittrails/')
+          .send({
+            event: 'update',
+            user: 'john'
+          })
+          .expect(403)
+          .end(done);
+      });
+
+      lt.beforeEach.givenModel('Person', {name: 'Tom', status: 'disabled', role: 'user'}, 'Person');
+      lt.beforeEach.givenModel('AuditTrail', {event: 'test', user: 'j'}, 'AuditTrail');
+      it('should not change read only properties on update (full read only model)', function(done) {
+        this.put('/api/people/' + this.Person.id + '/audittrails/' + this.AuditTrail.id)
+          .send({
+            event: 'update',
+            user: 'john'
+          })
+          .expect(403)
+          .end(done);
+      });
+
+      lt.beforeEach.givenModel('Person', {name: 'Tom', status: 'disabled', role: 'user'}, 'Person');
+      it('should save read only properties if the field is marked as skipped on create', function(done) {
+        var self = this;
+        var friend = { friendId: 1, since: new Date() };
+        self.post('/api/people/' + self.Person.id + '/friends')
+          .send(friend)
+          .set('Accept', 'application/json')
+          .expect(200)
+          .end(function(err, res) {
+            expect(err).to.not.exist;
+            var result = res.body;
+            expect(result.friendId).to.equal(friend.friendId);
+            expect(new Date(result.since)).to.equalDate(friend.since);
+            done();
+          });
+      });
+
+      lt.beforeEach.givenModel('Person', {name: 'Tom', status: 'disabled', role: 'user'}, 'Person');
+      it('should not save read only properties on update that is marked as skipped on create', function(done) {
+        var self = this;
+        var friend = { friendId: 1, since: new Date() };
+        self.post('/api/people/' + self.Person.id + '/friends')
+          .send(friend)
+          .set('Accept', 'application/json')
+          .expect(200)
+          .end(function(err, res) {
+            expect(err).to.not.exist;
+            var result = res.body;
+            expect(result.friendId).to.equal(friend.friendId);
+            expect(new Date(result.since)).to.equalDate(friend.since);
+            self.put('/api/people/' + self.Person.id + '/friends/' + result.id)
+              .send({friendId: 5, since: 0})
+              .set('Accept', 'application/json')
+              .expect(200)
+              .end(function(err, res) {
+                expect(err).to.not.exist;
+                var result = res.body;
+                expect(result.friendId).to.equal(friend.friendId);
+                expect(new Date(result.since)).to.equalDate(friend.since);
+                done();
+              });
+          });
+      });
+    });
+
+    describe('relations hasOne', function() {
+      lt.beforeEach.givenModel('Person', {name: 'Tom', status: 'disabled', role: 'user'}, 'Person');
+      it('should not change read only properties on create (full read only model)', function(done) {
+        this.post('/api/people/' + this.Person.id + '/balance/')
+          .send({
+            credit: 99999,
+            created: new Date()
+          })
+          .expect(403)
+          .end(done);
+      });
+
+      lt.beforeEach.givenModel('Person', {id: 900, name: 'Tom', status: 'disabled', role: 'user'}, 'PersonBalance');
+      lt.beforeEach.givenModel('Balance', {credit: 12, created: new Date(), updated: new Date(), personId: 900},
+        'Balance');
+      it('should not change read only properties on update (full read only model)', function(done) {
+        this.put('/api/people/' + this.PersonBalance.id + '/balance/')
+          .send({
+            credit: 99999,
+            created: new Date()
+          })
+          .expect(403)
+          .end(done);
+      });
+
+      lt.beforeEach.givenModel('Person', {name: 'Tom', status: 'disabled', role: 'user'}, 'Person');
+      it('should save read only properties if the field is marked as skipped on create', function(done) {
+        var self = this;
+        var data = { age: 23, address: 'New York', numberOfFriends: 234, username: 'test' };
+        self.post('/api/people/' + self.Person.id + '/profile')
+          .send(data)
+          .set('Accept', 'application/json')
+          .expect(200)
+          .end(function(err, res) {
+            expect(err).to.not.exist;
+            var profile = res.body;
+            expect(profile.age).to.equal(data.age);
+            expect(profile.address).to.equal(data.address);
+            expect(profile.numberOfFriends).to.not.exist;
+            expect(profile.username).to.equal(data.username);
+            done();
+          });
+      });
+
+      lt.beforeEach.givenModel('Person', {name: 'Tom', status: 'disabled', role: 'user'}, 'Person');
+      it('should not save read only properties on update that is marked as skipped on create', function(done) {
+        var self = this;
+        var data = { age: 23, address: 'New York', numberOfFriends: 234, username: 'test' };
+        self.post('/api/people/' + self.Person.id + '/profile')
+          .send(data)
+          .set('Accept', 'application/json')
+          .expect(200)
+          .end(function(err, res) {
+            expect(err).to.not.exist;
+            var profile = res.body;
+            expect(profile.age).to.equal(data.age);
+            expect(profile.address).to.equal(data.address);
+            expect(profile.numberOfFriends).to.not.exist;
+            expect(profile.username).to.equal(data.username);
+            var dataModify = {age: 25, numberOfFriends: 2, username: 'change'};
+            self.put('/api/people/' + self.Person.id + '/profile/')
+              .send(dataModify)
+              .set('Accept', 'application/json')
+              .expect(200)
+              .end(function(err, res) {
+                expect(err).to.not.exist;
+                var profile = res.body;
+                expect(profile.age).to.equal(dataModify.age);
+                expect(profile.address).to.equal(data.address);
+                expect(profile.numberOfFriends).to.not.exist;
+                expect(profile.username).to.equal(data.username);
+                done();
+              });
+          });
+      });
     });
   });
 });

@@ -10,7 +10,7 @@ read only. A read only property may not be written to directly when creating or
 updating models using remote REST methods.
 
 The property value is an object that details model properties to be
-treated as readonly properties. Each key in the object must match a property
+treated as read only properties. Each key in the object must match a property
 name defined for the model.
 
 A feature requests exists against the Loopback project for similar functionality
@@ -90,15 +90,15 @@ your model config.
   }
 ```
 
-Attempting to update a ReadOnly model will reult in a 403 error.
+Attempting to update a ReadOnly model will result in a 403 error.
 
 OPTIONS
 =============
 
-The specific fields that are to be marked as readonly can be set by passing an
+The specific fields that are to be marked as read only can be set by passing an
 object to the mixin options.
 
-In this example we mark the `status` and `role` fields as readonly.
+In this example we mark the `status` and `role` fields as read only.
 
 ```json
   {
@@ -123,8 +123,38 @@ In this example we mark the `status` and `role` fields as readonly.
   }
 ```
 
-Any data set by a REST client in ReadOnly properties will be stripped out
-on the way to the server and will not be saved on the updated model instance.
+It is possible to specify a method where fields are accepted:
+mark each field with property `skip` in the options
+`skip` property should support String or Array types
+
+In this example, the `status` and `role` fields are read only for all methods except `create`.
+
+```json
+  {
+    "name": "Widget",
+    "properties": {
+      "name": {
+        "type": "string",
+      },
+      "status": {
+        "type": "string",
+      },
+      "role": {
+        "type": "string",
+      }
+    },
+    "mixins": {
+      "ReadOnly" : {
+        "status" : {
+          "skip": "create"
+        },
+        "role" : {
+          "skip": ["create"]
+        }
+      }
+    }
+  }
+```
 
 TESTING
 =============

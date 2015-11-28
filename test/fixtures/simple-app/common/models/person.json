@@ -17,7 +17,28 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "friends": {
+      "type": "hasMany",
+      "model": "Friend",
+      "foreignKey": "personId"
+    },
+    "profile": {
+      "type": "hasOne",
+      "model": "Profile",
+      "foreignKey": "personId"
+    },
+    "balance": {
+      "type": "hasOne",
+      "model": "Balance",
+      "foreignKey": "personId"
+    },
+    "auditTrails": {
+      "type": "hasMany",
+      "model": "AuditTrail",
+      "foreignKey": "personId"
+    }
+  },
   "methods": {},
   "mixins": {
     "ReadOnly": {

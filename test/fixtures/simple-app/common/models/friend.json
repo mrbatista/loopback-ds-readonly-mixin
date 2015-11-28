@@ -1,0 +1,33 @@
+{
+  "name": "Friend",
+  "plural": "Friends",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "friendId": {
+      "type": "any",
+      "required": true
+    },
+    "since": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {},
+  "mixins": {
+    "ReadOnly": {
+      "friendId": {
+        "skip": "create"
+      },
+      "since": {
+       "skip": "create"
+      }
+    }
+  }
+}

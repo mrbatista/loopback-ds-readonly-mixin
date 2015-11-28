@@ -44,6 +44,7 @@
   "devDependencies": {
     "bluebird": "latest",
     "chai": "latest",
+    "chai-datetime": "^1.4.0",
     "coveralls": "^2.11.4",
     "jscs": "latest",
     "jshint": "latest",
