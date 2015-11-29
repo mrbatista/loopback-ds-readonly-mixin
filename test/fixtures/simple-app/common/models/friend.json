@@ -14,7 +14,8 @@
     "since": {
       "type": "date",
       "required": true
-    }
+    },
+    "readonly": "string"
   },
   "validations": [],
   "relations": {},
@@ -27,7 +28,8 @@
       },
       "since": {
        "skip": "create"
-      }
+      },
+      "readonly": true
     }
   }
 }

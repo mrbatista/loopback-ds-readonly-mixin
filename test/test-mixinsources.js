@@ -152,7 +152,7 @@ describe('loopback datasource readonly property (mixin sources.js)', function() 
       lt.beforeEach.givenModel('Person', {name: 'Tom', status: 'disabled', role: 'user'}, 'Person');
       it('should save read only properties if the field is marked as skipped on create', function(done) {
         var self = this;
-        var friend = { friendId: 1, since: new Date() };
+        var friend = { friendId: 1, since: new Date(), readonly: 'test' };
         self.post('/api/people/' + self.Person.id + '/friends')
           .send(friend)
           .set('Accept', 'application/json')
@@ -162,6 +162,7 @@ describe('loopback datasource readonly property (mixin sources.js)', function() 
             var result = res.body;
             expect(result.friendId).to.equal(friend.friendId);
             expect(new Date(result.since)).to.equalDate(friend.since);
+            expect(result.readonly).to.not.exist;
             done();
           });
       });
@@ -169,7 +170,7 @@ describe('loopback datasource readonly property (mixin sources.js)', function() 
       lt.beforeEach.givenModel('Person', {name: 'Tom', status: 'disabled', role: 'user'}, 'Person');
       it('should not save read only properties on update that is marked as skipped on create', function(done) {
         var self = this;
-        var friend = { friendId: 1, since: new Date() };
+        var friend = { friendId: 1, since: new Date(), readonly: 'test' };
         self.post('/api/people/' + self.Person.id + '/friends')
           .send(friend)
           .set('Accept', 'application/json')
@@ -179,6 +180,7 @@ describe('loopback datasource readonly property (mixin sources.js)', function() 
             var result = res.body;
             expect(result.friendId).to.equal(friend.friendId);
             expect(new Date(result.since)).to.equalDate(friend.since);
+            expect(result.readonly).to.not.exist;
             self.put('/api/people/' + self.Person.id + '/friends/' + result.id)
               .send({friendId: 5, since: 0})
               .set('Accept', 'application/json')
